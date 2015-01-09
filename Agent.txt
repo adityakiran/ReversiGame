@@ -1,0 +1,850 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.ArrayList;
+
+import javax.swing.text.html.HTMLDocument.Iterator;
+public class agent
+{
+	public static void main(String []a)
+	{
+	 BufferedReader br=null;
+	 BufferedWriter br1 = null;
+	 String []input={"","","","","","","",""};
+     char x = 'a';
+     int y = 1;
+     String z = "";
+     int arr[][]= {{99,-8,8,6,6,8,-8,99},{-8,-24,-4,-3,-3,-4,-24,-8},{8,-4,7,4,4,7,-4,8},{6,-3,4,0,0,4,-3,6},{6,-3,4,0,0,4,-3,6},{8,-4,7,4,4,7,-4,8},{-8,-24,-4,-3,-3,-4,-24,-8},{99,-8,8,6,6,8,-8,99}};
+     
+     System.out.println(z);
+     HashMap<String,Integer> map1 = new HashMap<String,Integer>();
+     for(int i=0;i<arr.length;i++)
+     {
+    	 y = 1+i;
+    	 x = 'a';
+    	 z = "";
+    	 for(int j=0;j<arr[i].length;j++)
+    	 {
+         z = z+x+y;	 
+    	 map1.put(z,arr[i][j]);
+    	 z = "";
+    	 int temp = 'a'+1+j;
+    	 x = (char)temp;
+    	 
+    	 }
+     }
+     try {
+         br = new BufferedReader(new FileReader("input.txt"));
+         br1 = new BufferedWriter(new FileWriter("output.txt"));
+         
+         int algo = Integer.parseInt(br.readLine());
+         String play = br.readLine();
+         char player = play.charAt(0);
+         char gameplayer = play.charAt(0);
+         char opp= 'O';
+         if(player=='X')
+        	 opp = 'O';
+         else
+        	 opp = 'X';
+         int depth = Integer.parseInt(br.readLine());
+         int count=0;
+         String []posx={"",""};
+         String []poso={"",""};
+         
+         int posocount=0,posxcount=0;
+         char col='a';
+         int row=1;
+         while(row<=8)
+         {
+        	String s = br.readLine();
+        	col='a';
+        	input[row-1] += s;
+        	row++;
+       /* 	for(int temp=0;temp<s.length();temp++)
+        	{
+        		
+        		if(s.charAt(temp)=='O')
+        			{
+        			
+        			 count = count+1;
+        			 poso[posocount] = poso[posocount]+col+row;
+        			 posocount++;
+        			}
+        		if(s.charAt(temp)=='X')
+    			{
+        		 
+    			 count = count+1;
+    			 posx[posxcount] = posx[posxcount]+col+row;
+    			 
+    			 posxcount++;
+    			}
+        		int temp1 = col+1;
+        		col = (char)temp1;
+        		
+        	}
+        	row++;
+           	
+         }*/
+         }
+        
+        //Implementation of MinMax
+        //MinMax('X','O',0,'X',input,map1,2,"root");
+        //Implementation of Greedy
+         ArrayList<String> aray = new ArrayList<String>();
+         if(algo==1) 
+         MinMax(player,opp,0,gameplayer,input,map1,1,"root",0,aray);
+         if(algo==2)
+         MinMax(player,opp,0,gameplayer,input,map1,depth,"root",0,aray);	 
+     //   String []moves = TellMoves(input,map1,'X','O','X');
+         if(algo==3)
+         AlphaBeta(player,opp,0,gameplayer,input,map1,depth,"root",0,Integer.MIN_VALUE,Integer.MAX_VALUE,aray);        
+         //System.out.println(aray.get(0));
+         java.util.Iterator<String> itr = aray.iterator();
+         java.util.Iterator<String> itr1 = aray.iterator();
+         int start=0;
+         String tmpr2="";
+         if(algo!=1){
+         while(itr.hasNext())
+         {
+        	 String tmper = itr.next();
+        	 if(tmper.charAt(0)=='N')
+        	 {
+        		tmpr2 = tmper; 
+        	 }
+        	 if(tmper.charAt(0)=='X'||tmper.charAt(0)=='O'||tmper.charAt(0)=='*')
+        	  {
+               br1.write(tmper);
+        	   br1.newLine();
+               break;}
+        	 else
+        		 start++;;
+        	
+         }
+         }
+         
+         while(itr.hasNext())
+         {
+        	  br1.write(itr.next());
+        	  br1.newLine();
+         }
+         if(algo!=1)
+         {
+        br1.write(tmpr2);
+        br1.newLine();
+         while(itr1.hasNext())
+         {
+        	 if(start==1)
+        		 break;
+        	 br1.write(itr1.next());
+        	 br1.newLine();
+        	 start--;
+         }
+         }
+         br1.close();
+         br.close();
+         
+    } catch (Exception ex) {
+        System.out.println(ex);
+    }
+     
+       
+	}
+	private static int AlphaBeta(char player,char opp,int level,char gameplayer,String []input,HashMap<String,Integer>map1,int maxlevel,String val,int pass,int alpha,int beta,ArrayList<String> aray)
+	{
+		
+		if(!CheckBoard(input,player,opp))
+		{
+			String alphatmp = (alpha==Integer.MIN_VALUE)?"-Infinity":(""+alpha);
+			String betatmp =  (beta==Integer.MAX_VALUE)?"Infinity":(""+beta);	
+			int ar[] = Evaluate(input,map1,gameplayer);
+			System.out.println(val+","+level+","+(ar[0]-ar[1])+","+alphatmp+","+betatmp);
+			aray.add(val+","+level+","+(ar[0]-ar[1])+","+alphatmp+","+betatmp);
+			if(val.equals("root"))
+			{
+				String tmpe="";
+		    	
+		    	if(maxlevel!=1)
+			    	aray.add("Node,Depth,Value,Alpha,Beta");
+		    	for(int neww=0;neww<input.length;neww++)
+		    	{
+		    		tmpe="";
+		    		for(int ne=0;ne<input[neww].length();ne++){
+		    			System.out.print(input[neww].charAt(ne));
+		    		    tmpe = tmpe+input[neww].charAt(ne);
+		    		}
+		    		aray.add(tmpe);
+		    		System.out.print("\n");
+		    	}
+			}
+			return (ar[0]-ar[1]);
+		}
+		String maxmove="";
+		String [][]moves = TellMoves(input,map1,player,opp,gameplayer,val);
+		
+		int temp_score=0;
+		int len = Integer.parseInt(moves[1][0]);
+		String []input1 = input.clone(); 
+	//	System.out.println("adadadadad"); 
+		int score;
+		if(player==gameplayer)
+			score = Integer.MIN_VALUE;
+		else
+			score = Integer.MAX_VALUE;
+		if(level!=maxlevel&&len==0)
+		{
+			if(pass==2)
+			{
+				String alphatmp = (alpha==Integer.MIN_VALUE)?"-Infinity":(""+alpha);
+				String betatmp =  (beta==Integer.MAX_VALUE)?"Infinity":(""+beta);	
+				String tmp = (score==Integer.MIN_VALUE)?"-Infinity":"Infinity";
+				int ar[] = Evaluate(input,map1,gameplayer);
+				System.out.println(val+","+level+","+(ar[0]-ar[1])+","+alphatmp+","+betatmp);
+				aray.add(val+","+level+","+(ar[0]-ar[1])+","+alphatmp+","+betatmp);
+				return (ar[0]-ar[1]);
+			}
+			if(maxlevel!=1)
+			{
+				int prevalpha=alpha,prevbeta=beta;
+				String alphatmp = (alpha==Integer.MIN_VALUE)?"-Infinity":(""+alpha);
+				String betatmp =  (beta==Integer.MAX_VALUE)?"Infinity":(""+beta);	
+				String tmp = (score==Integer.MIN_VALUE)?"-Infinity":"Infinity";
+				System.out.println(val+","+level+","+tmp+","+alphatmp+","+betatmp);
+				aray.add(val+","+level+","+tmp+","+alphatmp+","+betatmp);
+				temp_score = AlphaBeta(opp,player,level+1,gameplayer,input,map1,maxlevel,"pass",pass+1,alpha,beta,aray);
+				//temp_score = AlphaBeta(opp,player,level+1,gameplayer,input,map1,maxlevel,moves[0][i],0,alpha,beta);
+				//System.out.println("Score"+temp_score);
+				if(player==gameplayer&&temp_score>alpha)
+				{
+					
+					alpha = temp_score;
+				}
+				if(player!=gameplayer&&temp_score<beta)
+				{
+					
+					beta = temp_score;
+				}
+				if(player==gameplayer&&temp_score>score)
+				{
+					
+					score=temp_score;
+				}
+				if(player!=gameplayer&&temp_score<score)
+				{
+					
+					score=temp_score;
+				}
+				if(alpha>=beta)
+				{
+					if(player==gameplayer)
+						alpha = prevalpha;
+					else
+						beta = prevbeta;
+				}
+			/*	alphatmp = (alpha==Integer.MIN_VALUE)?"-Infinity":(""+alpha);
+				betatmp =  (beta==Integer.MAX_VALUE)?"Infinity":(""+beta);	
+				tmp = ""+score;
+				System.out.println(val+","+level+","+tmp+","+alphatmp+","+betatmp);*/
+			    
+			}
+		}
+		if(level==maxlevel)
+		{
+			String alphatmp = (alpha==Integer.MIN_VALUE)?"-Infinity":(""+alpha);
+			String betatmp =  (beta==Integer.MAX_VALUE)?"Infinity":(""+beta);	
+
+			int ar[] = Evaluate(input,map1,gameplayer);
+			if(maxlevel!=1){
+			System.out.println(val+","+level+","+(ar[0]-ar[1])+","+alphatmp+","+betatmp);
+			aray.add(val+","+level+","+(ar[0]-ar[1])+","+alphatmp+","+betatmp);}
+			return (ar[0]-ar[1]);
+		}
+		else
+		{
+			if(len>0)
+			{
+			for(int i=0;i<len;i++)
+			{
+				int prevalpha=0,prevbeta=0;
+			if(player==gameplayer)
+				//min max update
+			{	//update input value
+				String tmp="";
+		        
+				    
+					input = input1.clone();
+					tmp = (score==Integer.MIN_VALUE)?"-Infinity":(""+score);
+					String alphatmp = (alpha==Integer.MIN_VALUE)?"-Infinity":(""+alpha);
+					String betatmp =  (beta==Integer.MAX_VALUE)?"Infinity":(""+beta);	
+					if(maxlevel!=1){
+				    System.out.println(val+","+level+","+tmp+","+alphatmp+","+betatmp);
+					aray.add(val+","+level+","+tmp+","+alphatmp+","+betatmp);
+					}
+					//update input
+				    if(i<len){
+					UpdateInput(input,moves[0][i],player);
+ 					temp_score = AlphaBeta(opp,player,level+1,gameplayer,input,map1,maxlevel,moves[0][i],0,alpha,beta,aray);
+					//System.out.println("Score"+temp_score);
+					if(temp_score>alpha)
+					{   
+						prevalpha = alpha;
+						alpha = temp_score;
+					
+					}
+					if(temp_score>score)
+					{
+						maxmove = moves[0][i];
+						score=temp_score;
+					}
+				    }
+				}
+			else
+				//min max update
+			{	//update input value
+				String tmp="";
+		        
+				
+					input = input1.clone();
+					tmp = (score==Integer.MAX_VALUE)?"Infinity":(""+score);
+					String alphatmp = (alpha==Integer.MIN_VALUE)?"-Infinity":(""+alpha);
+					String betatmp =  (beta==Integer.MAX_VALUE)?"Infinity":(""+beta);
+					if(maxlevel!=1){
+					System.out.println(val+","+level+","+tmp+","+alphatmp+","+betatmp);
+					aray.add(val+","+level+","+tmp+","+alphatmp+","+betatmp);
+					}
+					if(i<len){
+					//update input
+					UpdateInput(input,moves[0][i],player);
+					temp_score = AlphaBeta(opp,player,level+1,gameplayer,input,map1,maxlevel,moves[0][i],0,alpha,beta,aray);
+				//	System.out.println("Score"+temp_score);
+					if(temp_score<beta)
+					{
+						prevbeta = beta;
+						beta = temp_score;
+					}
+					if(temp_score<score)
+					{
+						
+						score=temp_score;
+					}
+					}
+				}
+			if(alpha>=beta)
+			{
+				if(player==gameplayer)
+					alpha = prevalpha;
+				else
+					beta = prevbeta;
+				break;
+			}
+				}
+			}
+		}
+		String tmp="";
+		if(player==gameplayer)
+		tmp = (score==Integer.MIN_VALUE)?"-Infinity":(""+score);
+		else
+		tmp = (score==Integer.MAX_VALUE)?"Infinity":(""+score);
+		String alphatmp = (alpha==Integer.MIN_VALUE)?"-Infinity":(""+alpha);
+		String betatmp =  (beta==Integer.MAX_VALUE)?"Infinity":(""+beta);
+		if(maxlevel!=1){
+		System.out.println(val+","+level+","+tmp+","+alphatmp+","+betatmp);
+		aray.add(val+","+level+","+tmp+","+alphatmp+","+betatmp);
+		}
+		    if(val.equals("root"))
+		    {
+		    	
+		    	String tmpe="";
+		    	if(!maxmove.equals(""))
+		    	UpdateInput(input1,maxmove,player);
+		    	if(maxlevel!=1)
+			    	aray.add("Node,Depth,Value,Alpha,Beta");
+		    	for(int neww=0;neww<input1.length;neww++)
+		    	{
+		    		tmpe="";
+		    		for(int ne=0;ne<input1[neww].length();ne++){
+		    			System.out.print(input1[neww].charAt(ne));
+		    		    tmpe = tmpe+input1[neww].charAt(ne);
+		    		}
+		    		aray.add(tmpe);
+		    		System.out.print("\n");
+		    	}
+		    	
+		    }
+			 return score;
+	}
+	private static int MinMax(char player,char opp,int level,char gameplayer,String []input,HashMap<String,Integer>map1,int maxlevel,String val,int pass,ArrayList<String> aray)
+	{
+		if(!CheckBoard(input,player,opp))
+		{
+			int ar[] = Evaluate(input,map1,gameplayer);
+			System.out.println(val+","+level+","+(ar[0]-ar[1]));
+			aray.add(val+","+level+","+(ar[0]-ar[1]));
+			return (ar[0]-ar[1]);
+		}
+		String maxmove="";
+		String [][]moves = TellMoves(input,map1,player,opp,gameplayer,val);
+		
+		int temp_score=0;
+		int len = Integer.parseInt(moves[1][0]);
+		String []input1 = input.clone();
+	//	System.out.println("adadadadad"); 
+		int score;
+		if(player==gameplayer)
+			score = Integer.MIN_VALUE;
+		else
+			score = Integer.MAX_VALUE;
+		if(level!=maxlevel&&len==0)
+		{
+			if(pass==2)
+			{
+				int ar[] = Evaluate(input,map1,gameplayer);
+				System.out.println(val+","+level+","+(ar[0]-ar[1]));
+				aray.add(val+","+level+","+(ar[0]-ar[1]));
+				return (ar[0]-ar[1]);
+			}
+			if(maxlevel!=1)
+			{
+				String tmp = (score==Integer.MIN_VALUE)?"-Infinity":"Infinity";
+				System.out.println(val+","+level+","+tmp);
+				aray.add(val+","+level+","+tmp);
+			temp_score = MinMax(opp,player,level+1,gameplayer,input,map1,maxlevel,"pass",pass+1,aray);
+			if(player==gameplayer&&temp_score>score)
+			{
+				
+				score=temp_score;
+			}
+			if(player!=gameplayer&&temp_score<score)
+			{
+				
+				score=temp_score;
+			}
+			}
+		}
+		if(level==maxlevel)
+		{
+
+			int ar[] = Evaluate(input,map1,gameplayer);
+			if(maxlevel!=1)
+			{
+			System.out.println(val+","+level+","+(ar[0]-ar[1]));
+			aray.add(val+","+level+","+(ar[0]-ar[1]));
+			}
+			return (ar[0]-ar[1]);
+		}
+		else
+		{
+			if(len>0)
+			{
+			for(int i=0;i<len;i++)
+			{
+				
+			if(player==gameplayer)
+				//min max update
+			{	//update input value
+				String tmp="";
+		        
+				
+					input = input1.clone();
+					tmp = (score==Integer.MIN_VALUE)?"-Infinity":(""+score);
+					if(maxlevel!=1)
+					{
+				    System.out.println(val+","+level+","+tmp);
+					aray.add(val+","+level+","+tmp);
+					}
+					//update input
+				    if(i<len){
+					UpdateInput(input,moves[0][i],player);
+					temp_score = MinMax(opp,player,level+1,gameplayer,input,map1,maxlevel,moves[0][i],0,aray);
+					//System.out.println("Score"+temp_score);
+					if(temp_score>score)
+					{
+						maxmove = moves[0][i];
+						score=temp_score;
+					}
+				    }
+				}
+			else
+				//min max update
+			{	//update input value
+				String tmp="";
+		        
+				
+					input = input1.clone();
+					tmp = (score==Integer.MAX_VALUE)?"Infinity":(""+score);
+					if(maxlevel!=1){
+					System.out.println(val+","+level+","+tmp);
+					aray.add(val+","+level+","+tmp);
+					}
+					if(i<len){
+					//update input
+					UpdateInput(input,moves[0][i],player);
+					temp_score = MinMax(opp,player,level+1,gameplayer,input,map1,maxlevel,moves[0][i],0,aray);
+				//	System.out.println("Score"+temp_score);
+					if(temp_score<score)
+					{
+						
+						score=temp_score;
+					}
+					}
+				}
+				}
+			}
+		}
+		String tmp="";
+		if(player==gameplayer)
+		tmp = (score==Integer.MIN_VALUE)?"-Infinity":(""+score);
+		else
+		tmp = (score==Integer.MAX_VALUE)?"Infinity":(""+score);
+		
+		if(maxlevel!=1){
+		System.out.println(val+","+level+","+tmp+",");
+		aray.add(val+","+level+","+tmp);
+		}
+		    if(val.equals("root"))
+		    {
+		    	if(maxlevel!=1)
+		    		aray.add("Node,Depth,Value");
+		    	if(!maxmove.equals(""))
+		    	UpdateInput(input1,maxmove,player);
+		    	String tmpe="";
+		    	for(int neww=0;neww<input1.length;neww++)
+		    	{
+		    		tmpe="";
+		    		for(int ne=0;ne<input1[neww].length();ne++)
+		    			{
+		    			tmpe = tmpe+input1[neww].charAt(ne);
+		    			System.out.print(input1[neww].charAt(ne));
+		    			}
+		    		aray.add(tmpe);
+		    		System.out.print("\n");
+		    	}
+		    }
+			 return score;
+	}
+	private static void UpdateInput(String []input,String val,char player)
+	{
+		UpdateInputInternal(input,val,player,1,0);
+		UpdateInputInternal(input,val,player,-1,0);
+		UpdateInputInternal(input,val,player,1,1);
+		UpdateInputInternal(input,val,player,1,-1);
+		UpdateInputInternal(input,val,player,0,1);
+		UpdateInputInternal(input,val,player,-1,1);
+		UpdateInputInternal(input,val,player,-1,-1);
+		UpdateInputInternal(input,val,player,0,-1);
+	}
+	private static String[] UpdateInputInternal(String []input,String val,char player,int dirx,int diry)
+	{
+		//System.out.println("adi");
+		
+		int a = val.charAt(0)-'a';
+		int b = val.charAt(1)-'1';
+		if(a<0&&b<0&&a>7&&b>7)
+			return input;
+	//	System.out.println(a+""+b);
+		StringBuilder []s1 = new StringBuilder[input.length];
+		for(int i=0;i<input.length;i++)
+			s1[i] = new StringBuilder(input[i]);
+		s1[b].setCharAt(a,player);
+		input[b] = s1[b].toString();
+		a = a+diry; b = b+dirx;
+		int c=0;
+	    while(a>=0&&b>=0&&a<=7&&b<=7)
+	    {
+	    	if(s1[b].charAt(a)=='*')
+	    		return input;
+	    	if(s1[b].charAt(a)==player)
+	    	{
+	    		if(c==0)
+	    			return input;
+	    		else
+	    			break;
+	    	}
+	    	if(s1[b].charAt(a)!=player)
+	    		{s1[b].setCharAt(a,player);c++;}
+	    	a = a+diry; b = b+dirx;
+	    }
+	    for(int i=0;i<input.length;i++)
+			input[i] = s1[i].toString();
+	    return input;
+	}
+	private static void Greedy(HashMap<String,Integer>map1,String[]input)
+	{
+		
+	}
+	private static String[][] TellMoves(String []input,HashMap<String,Integer>map1,char player,char opp,char gameplayer,String val)
+	{
+		//use hashmap to store the max values and sort them
+        
+		int flag=0;
+	//	char player='X';
+		int maxX[]=new int[64];
+		int maxO[]=new int[64];
+		int []ar = new int[2];
+		ar[0]=0;
+		ar[1]=0;
+		ar= Evaluate(input,map1,gameplayer);
+		
+		int temp=0;
+		String [][]moves = {{"","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""},{"",""}};
+		
+		int [][]z1=new int[8][3];//int []z2=new int[3];int []z3=new int[3];int []z4=new int[3];int []z5=new int[3];int []z6=new int[3];int []z7=new int[3];int []z8=new int[3];
+		z1[0][0]=z1[0][1]=z1[0][2]=0;
+		z1[1][0]=z1[1][1]=z1[1][2]=0;
+		z1[2][0]=z1[2][1]=z1[2][2]=0;
+		z1[3][0]=z1[3][1]=z1[3][2]=0;
+		z1[4][0]=z1[4][1]=z1[4][2]=0;
+		z1[5][0]=z1[5][1]=z1[5][2]=0;
+		z1[6][0]=z1[6][1]=z1[6][2]=0;
+		z1[7][0]=z1[7][1]=z1[7][2]=0;
+		
+		for(int i=0;i<input.length;i++)
+		{
+			//char temp = 'a';
+			//int temp1 = temp;
+			for(int j=0;j<=7;j++)
+			{
+				flag=0;
+				int set=0;
+				z1[0][0]=z1[0][1]=z1[0][2]=0;
+				z1[1][0]=z1[1][1]=z1[1][2]=0;
+				z1[2][0]=z1[2][1]=z1[2][2]=0;
+				z1[3][0]=z1[3][1]=z1[3][2]=0;
+				z1[4][0]=z1[4][1]=z1[4][2]=0;
+				z1[5][0]=z1[5][1]=z1[5][2]=0;
+				z1[6][0]=z1[6][1]=z1[6][2]=0;
+				z1[7][0]=z1[7][1]=z1[7][2]=0;
+				   String z="";
+				   int ab = 'a'+j;
+				   z = z+(char)ab+(i+1);
+				   z1[0] = Check(player,opp,input,map1,i,j,1,0,ar[0],ar[1],map1.get(z),gameplayer,set,val);
+				   if(z1[0][0]>0)set =1;
+				   z1[1] = Check(player,opp,input,map1,i,j,-1,0,z1[0][1],z1[0][2],map1.get(z),gameplayer,set,val);
+				   if(z1[1][0]>0)set =1;
+				   z1[2] = Check(player,opp,input,map1,i,j,0,1,z1[1][1],z1[1][2],map1.get(z),gameplayer,set,val);
+				   if(z1[2][0]>0)set =1;
+				   z1[3] = Check(player,opp,input,map1,i,j,0,-1,z1[2][1],z1[2][2],map1.get(z),gameplayer,set,val);
+				   if(z1[3][0]>0)set =1;
+				   z1[4] = Check(player,opp,input,map1,i,j,1,1,z1[3][1],z1[3][2],map1.get(z),gameplayer,set,val);
+				   if(z1[4][0]>0)set =1;
+				   z1[5] = Check(player,opp,input,map1,i,j,1,-1,z1[4][1],z1[4][2],map1.get(z),gameplayer,set,val);
+				   if(z1[5][0]>0)set =1;
+				   z1[6] = Check(player,opp,input,map1,i,j,-1,1,z1[5][1],z1[5][2],map1.get(z),gameplayer,set,val);
+				   if(z1[6][0]>0)set =1;
+				   z1[7] = Check(player,opp,input,map1,i,j,-1,-1,z1[6][1],z1[6][2],map1.get(z),gameplayer,set,val);
+				//temp1 = temp+j+1;
+				  // System.out.println("z value"+(z1+z2+z3+z4+z5+z6+z7+z8));
+				   
+				   for(int ib=0;ib<z1.length;ib++)
+				   {
+					   
+				   if(flag==0&&z1[ib][0]>0)
+					   {
+					   flag=1;
+					 //  System.out.println("z value\t"+z1[ib][1]+"\t"+z1[ib][2]);
+					   // System.out.println("Proper\t"+i+"\t"+j);
+					    int var = 'a'+j;
+					    moves[0][temp]=moves[0][temp]+(char)var+(i+1);
+					     	
+					    temp++;
+				  /* if(player=='X')
+				   {
+			         if(z1[ib][1]-z1[ib][2]>maxX)
+			        	 maxX = z1[ib][1]-z1[ib][2];
+				   }
+				   else
+				   {
+					   if(z1[ib][2]-z1[ib][1]>maxO)
+				        	 maxO = z1[ib][2]-z1[ib][1];
+				   }*/
+					   }
+				   }
+				   if(set>0){
+				   if(player==gameplayer)
+					   maxX[temp-1]= z1[7][1]-z1[7][2];
+				   else
+					   maxX[temp-1] = z1[7][2]-z1[7][1];}
+				 }
+			
+			}
+		moves[1][0] = moves[1][0]+temp;
+		/*for(int i=0;i<temp;i++)
+			System.out.println(moves[i]+"maxx"+maxX[i]);*/
+		
+		return moves;
+	}
+	private static int[] Check(char player,char opp,String[] input1,HashMap<String,Integer> map1,int x,int y,int dirx,int diry,int valplayer,int valopp,int mapcurrentvalue,char gameplayer,int set,String val)
+	{
+	
+		//System.out.println("XX"+dirx+"\t"+"YY"+diry);
+		int loop=0;
+		int []result = new int[3];
+		result[0] = 0;
+		result[1] = 0;
+		result[2] = 0;
+	    StringBuilder[] input = new StringBuilder[input1.length];
+	    for(int i=0;i<input1.length;i++)
+	    	input[i] = new StringBuilder(input1[i]);
+		String pos="";
+		int t1 = x;
+		int t2 = y;
+		pos = pos+x+y;
+	/*	if(input[x].charAt(y)==player||input[x].charAt(y)==opp)
+		 System.out.println(""+player+opp);*/
+		int c=0;
+		if(input[x].charAt(y)=='*')
+		{
+			
+		while(x>=0&&x<=7&&y>=0&&y<=7)
+		{
+		
+		// c++;
+		 x = x+dirx;
+		 y = y+diry;
+		//   if(val.equals("a6")&&t1==4&&t2==0&&dirx==1&&diry==0)
+			// System.out.println("Dvalue"+input[3].charAt(3));
+		 if(x>=0&&x<=7&&y>=0&&y<=7&&input[x].charAt(y)==opp)
+			 {
+			 c++;
+			// if(val.equals("a6"))
+				// System.out.println("C\t"+c+"X\t"+t1+"Y\t"+t2);
+			// System.out.println("adic"+c);*/
+			 }
+		 
+		 if(x>=0&&x<=7&&y>=0&&y<=7&&input[x].charAt(y)==player&&c>0)
+			{	
+			//System.out.println("place is valid"+x+y);
+		//	if(player=='X')
+			 loop=1;
+			  if(set==0)
+			  valplayer = valplayer+mapcurrentvalue;
+		/*	else
+			  valopp = valopp+mapcurrentvalue; */
+			
+			break;
+			}
+		 if(x>=0&&x<=7&&y>=0&&y<=7&&input[x].charAt(y)==player&&c==0)
+			{	
+			
+			
+			break;
+			}
+		 if(x>=0&&x<=7&&y>=0&&y<=7&&input[x].charAt(y)=='*')
+			{	
+		//	 System.out.println("place is valid"+x+y);
+			 
+			 c=0;
+			break;
+			}
+		}
+		//System.out.println("c"+c);
+		
+	
+		}
+		if(loop==0)
+			c=0;
+		if(c>0)
+		{
+			
+			for(int i=c;i>=1;i--)
+			{
+				
+				x = x-dirx;
+				y = y-diry;
+			  if(player=='X')
+			  {
+			//	System.out.println("adi1");
+				 String z="";
+				 int ab = 'a'+y;
+				 z = z+(char)ab+(y+1);
+				 input[x].setCharAt(y,'X');
+				 valplayer = valplayer+map1.get(z);
+				 valopp = valopp-map1.get(z);
+			  }
+			  if(player=='O')
+			  {
+			//	  System.out.println("adi00");
+				  String z="";
+					 int ab = 'a'+y;
+					 z = z+(char)ab+(y+1);
+				  input[x].setCharAt(y,'O');
+				  valplayer = valplayer-map1.get(z);
+					 valopp = valopp+map1.get(z);
+			  }
+			}
+		}
+		result[0] = c;
+		if(player==gameplayer)
+		{
+		result[1] = valplayer;
+		result[2] = valopp;
+		}
+		else
+		{
+			result[2] = valplayer;
+			result[1] = valopp;
+		}
+	//	System.out.println("chech\t"+valplayer+"\t"+valopp);
+		return result;
+	}
+	private static boolean CheckBoard(String []input,char player,char opp)
+	{
+		int play=0,op=0;
+		for(int i=0;i<input.length;i++)
+		{
+			for(int j=0;j<input[i].length();j++)
+			{
+				if(input[i].charAt(j)==player)
+					play++;
+				if(input[i].charAt(j)==opp)
+					op++;
+					
+			}
+		}
+		if(play>=1&&op>=1)
+			return true;
+		return false;
+	}
+	private static int[] Evaluate(String[] input,HashMap<String,Integer> map1,char gameplayer)
+	{
+		int []ar = new int[2];
+		
+		ar[0] = 0; //0 stands for player 
+		ar[1] = 0; //0 stands for opponent
+		for(int i=0;i<input.length;i++)
+		{
+			for(int j=0;j<input[i].length();j++)
+			{
+				//System.out.println("A\t"+i+"\t"+input[i].charAt(j));
+				if(input[i].charAt(j)=='X')
+				{
+					String z="";
+					int a = 'a'+j;
+					z = z+(char)a+(i+1);
+					
+					if(gameplayer=='X')
+					ar[0] = ar[0]+map1.get(z);
+					else
+					ar[1] = ar[1]+map1.get(z);
+					
+				}
+				if(input[i].charAt(j)=='O')
+				{
+					
+					String z="";
+					int a = 'a'+j;
+					z = z+(char)a+(i+1);
+					if(gameplayer=='O')
+					ar[0] = ar[0]+map1.get(z);
+					else
+					ar[1] = ar[1]+map1.get(z);
+				}
+				
+			}
+		}
+		
+		return ar;
+	}
+}
